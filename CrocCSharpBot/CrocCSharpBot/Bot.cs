@@ -70,7 +70,6 @@ namespace CrocCSharpBot
                     break;
             }
         }
-
         /// <summary>
         /// Обработка команды
         /// </summary>
