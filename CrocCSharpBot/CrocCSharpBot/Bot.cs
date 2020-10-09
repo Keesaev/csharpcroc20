@@ -24,7 +24,8 @@ namespace CrocCSharpBot
         public Bot()
         {
             // Создание клиента для Telegram
-            client = new TelegramBotClient("1181297092:AAEv84wsLW-sKDuw3JMXpLNR8xC6lJk2HtE");
+            // Ссылка на бота: t.me/croc20_dz_bot
+            client = new TelegramBotClient("1355340435:AAF80Wqsu8jZs6sZE1gtCUAh-yN6bBZBEvw");
             client.OnMessage += MessageProcessor;
         }
 
@@ -37,6 +38,14 @@ namespace CrocCSharpBot
         {
             switch (e.Message.Type)
             {
+                case Telegram.Bot.Types.Enums.MessageType.Document:     // документ
+                    HandleDocumentAsync(e.Message);
+                    client.SendTextMessageAsync(e.Message.Chat.Id, "Скачал твой документ");
+                    break;
+                case Telegram.Bot.Types.Enums.MessageType.Photo:        // изображение     
+                    HandleImageAsync(e.Message);
+                    client.SendTextMessageAsync(e.Message.Chat.Id, "Скачал твоё изображение");
+                    break;
                 case Telegram.Bot.Types.Enums.MessageType.Contact: // телефон
                     string phone = e.Message.Contact.PhoneNumber;
                     client.SendTextMessageAsync(e.Message.Chat.Id, $"Твой телефон: {phone}");
@@ -44,7 +53,7 @@ namespace CrocCSharpBot
                     break;
 
                 case Telegram.Bot.Types.Enums.MessageType.Text: // текстовое сообщение
-                    if (e.Message.Text.Substring(0, 1) == "/")
+                    if (e.Message.Text.Substring(0, 1) == "/")  // команда
                     {
                         CommandProcessor(e.Message);
                     }
@@ -84,6 +93,56 @@ namespace CrocCSharpBot
                 default:
                     client.SendTextMessageAsync(message.Chat.Id, $"Я пока не понимаю команду {command}");
                     break;
+            }
+        }
+        /// <summary>
+        /// Обрабатываем документ
+        /// </summary>
+        /// <param name="message"></param>
+        private async void HandleDocumentAsync(Telegram.Bot.Types.Message message)
+        {
+            String address = @"d:\botDownloads\" + message.Document.FileName;
+            Console.WriteLine("Сохраняем документ как " + address);
+
+            try
+            {
+                // Получаем JSON
+                var file = await client.GetFileAsync(message.Document.FileId);
+                // Открываем поток для записи на диск
+                System.IO.FileStream saveStream = new System.IO.FileStream(address, System.IO.FileMode.Create);
+                // Сохраняем файл
+                await client.DownloadFileAsync(file.FilePath, saveStream);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Обрабатываем изображение
+        /// </summary>
+        /// <param name="message"></param>
+        private async void HandleImageAsync(Telegram.Bot.Types.Message message)
+        {
+            // message.Photo.Length - 1 это нужный нам файл
+            String fileId = message.Photo[message.Photo.Length - 1].FileId;
+            
+            String address = @"d:\botDownloads\Photo_" + fileId.ToString().Substring(0, 5) + ".jpg";
+            Console.WriteLine("Сохраняем изображение как " + address);
+
+            try
+            {
+                // Получаем JSON
+                var file = await client.GetFileAsync(message.Photo[message.Photo.Length - 1].FileId);
+                // Открываем поток для записи на диск
+                System.IO.FileStream saveStream = new System.IO.FileStream(address, System.IO.FileMode.Create);
+                // Сохраняем файл
+                await client.DownloadFileAsync(file.FilePath, saveStream);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
 
