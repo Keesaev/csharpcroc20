@@ -100,7 +100,9 @@ namespace CrocCSharpBot
         /// <param name="message"></param>
         private async void HandleDocumentAsync(Telegram.Bot.Types.Message message)
         {
-            String address = @"d:\botDownloads\" + message.Document.FileName;
+            // [!] String и string - это синонимы, но обычно пишут string
+
+            string address = @"d:\botDownloads\" + message.Document.FileName;
             Console.WriteLine("Сохраняем документ как " + address);
 
             try
@@ -108,9 +110,13 @@ namespace CrocCSharpBot
                 // Получаем JSON
                 var file = await client.GetFileAsync(message.Document.FileId);
                 // Открываем поток для записи на диск
-                System.IO.FileStream saveStream = new System.IO.FileStream(address, System.IO.FileMode.Create);
-                // Сохраняем файл
-                await client.DownloadFileAsync(file.FilePath, saveStream);
+
+                // [!] открытый поток надо закрывать, можно использовать using для удобства
+                using (System.IO.FileStream saveStream = new System.IO.FileStream(address, System.IO.FileMode.Create))
+                {
+                    // Сохраняем файл
+                    await client.DownloadFileAsync(file.FilePath, saveStream);
+                }
             }
             catch(Exception ex)
             {
@@ -125,9 +131,9 @@ namespace CrocCSharpBot
         private async void HandleImageAsync(Telegram.Bot.Types.Message message)
         {
             // message.Photo.Length - 1 это нужный нам файл
-            String fileId = message.Photo[message.Photo.Length - 1].FileId;
+            string fileId = message.Photo[message.Photo.Length - 1].FileId;
             
-            String address = @"d:\botDownloads\Photo_" + fileId.ToString().Substring(0, 5) + ".jpg";
+            string address = @"d:\botDownloads\Photo_" + fileId.ToString().Substring(0, 5) + ".jpg";
             Console.WriteLine("Сохраняем изображение как " + address);
 
             try
@@ -135,9 +141,13 @@ namespace CrocCSharpBot
                 // Получаем JSON
                 var file = await client.GetFileAsync(message.Photo[message.Photo.Length - 1].FileId);
                 // Открываем поток для записи на диск
-                System.IO.FileStream saveStream = new System.IO.FileStream(address, System.IO.FileMode.Create);
-                // Сохраняем файл
-                await client.DownloadFileAsync(file.FilePath, saveStream);
+
+                // [!] открытый поток надо закрывать, можно использовать using для удобства
+                using (System.IO.FileStream saveStream = new System.IO.FileStream(address, System.IO.FileMode.Create))
+                {
+                    // Сохраняем файл
+                    await client.DownloadFileAsync(file.FilePath, saveStream);
+                }
             }
             catch (Exception ex)
             {
